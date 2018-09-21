@@ -1,0 +1,105 @@
+<html>
+  <head>
+  <link rel="Stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
+  <script src="model.js"></script>
+</head>
+<body>
+  <ul class="clients">
+    <!-- ko foreach: pages -->
+      <li data-bind="text: $data, 
+                    css: { selected: $data == $root.selectedPage() },
+                    click: $root.selectPage">              
+      </li>
+    <!-- /ko -->
+    <li data-bind="visible: 'Update Feature' == selectedPage(),
+                  css: { selected: 'Update Feature' == selectedPage()}">Update Feature
+    </li>
+  </ul>
+
+  <div class="container">
+  
+  <!-- Template for Intro page -->
+  <div data-bind="visible: selectedPage() == pages[0] ">
+    <div class="jumbotron">
+        <h2>Welcome to our feature request form!</h2>
+        <h4 style="margin-left:100px">The instructions to use this site are below</h2>
+    </div>
+    <ul>
+      <li><h4>To view active feature requests, click <span style="font-weight: 700">"View Features" </span>on the navigation bar above <br>
+          Click on the client the approriate client to view active requests<br>
+          To edit a feature, click on the feature you wish to edit<br>
+          You may remove a feature request by pressing the "Complete" button<br>
+          Features requests by client are listed in order of priority </h4></li>
+      <br>
+      <li><h4>To add a feature, click <span style="font-weight: 700">"Add Feature"</span> on the navigation bar above <br>
+          Fill out the needed information<br>
+          Press the "Submit" button<br>
+          You will be redirected to the "View Features" page</h4></li>
+      <br>
+      <li><h4>To edit a feature, click a feature while on the <span style="font-weight: 700">"View Features"</span> page <br>
+        You will be redirected to "Update Feature"<br>
+        Edit the information as needed<br>
+        Press the "Update" button<br>
+        You will be redirected to the "View Features" page</h4></li>
+    <br>
+    <li><h4>To remove a feature do one of the following:<br>
+      Press "Complete" while on "View Features"<br>
+      Press "Delete" while on "Update Feature"
+    </ul>    
+  </div>
+  <br>
+
+  <!-- Template for View Features page -->
+  <div data-bind="visible: selectedPage() == pages[1] ">
+    <ul class="clients" data-bind="foreach: clients">
+        <li data-bind="text: $data, 
+                       css: { selected: $data == $root.chosenClientId() },
+                       click: $root.selectClient">            
+        </li>
+    </ul>
+    <table class="features">
+        <thead><tr><th>Priority</th><th>Target Date</th><th>Title</th><th></th></tr></thead>
+        <tbody data-bind="foreach: chosenClientData">
+            <tr>
+                <td data-bind="text: clientPriority,click: $root.selectUpdatePage",></td>
+                <td data-bind="text: targetDate,click: $root.selectUpdatePage"></td>
+                <td data-bind="text: title,click: $root.selectUpdatePage"></td>
+                <td data-bind="click: $root.removeFeatureButton"><button style="color: black;">Complete</button></td>
+            </tr>
+        </tbody>
+    </table>
+  </div>
+
+  <!-- Template for Add Features/Udate Features pages -->
+  <div data-bind="visible: selectedPage() == pages[2] || selectedPage() == 'Update Feature' ">
+    <form id="submit-form" data-bind="submit: saveFormData">
+      <div><label >Title</label><input type="text" class="form-control is-valid" required data-bind="textInput: formTitle, value: formTitle" ></input></div><br>
+      <div><label >Description</label><textarea class="form-control  is-valid" rows="3" required data-bind="textInput: formDesciption, value: formDesciption"></textarea></div><br>
+        <div><label>Client</label><select class="form-control is-valid" required data-bind="options: clients,
+                              value: formClient,
+                              valueAllowUnset: true,
+                              optionsCaption: 'Choose Client...'"></select></div><br>    
+        <div><label>Client Priority</label><input class="form-control is-valid" required data-bind="textInput: formClientPriority, value: formClientPriority" placeholder="Use a number"></input></div><br>
+        <div><label>Target Date</label><input class="form-control is-valid" required data-bind="textInput: formTargetDate, value: formTargetDate", placeholder="Format mm/dd/yyyy"></input></div><br>
+        <div><label>Product Area</label><select class="form-control is-valid" required data-bind="options: productAreas,
+          value: formProductArea,
+          valueAllowUnset: true,
+          optionsCaption: 'Choose Product Area...'"></select></div><br>
+        <div>
+          <button type='submit'data-bind="visible: 'Update Feature' == selectedPage() ,
+                            ">Update</button>
+          <button type='submit' data-bind="visible: 'Update Feature' != selectedPage() ,
+                            ">Submit</button>                  
+          <button data-bind="visible: 'Update Feature' != selectedPage() ,
+                            click: clearForm">Reset</button>
+          <button data-bind="click: cancelFeatureButton">Cancel</button>
+          <button data-bind="visible: 'Update Feature' == selectedPage() ,
+                            click: deleteFeatureButton">Delete</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
