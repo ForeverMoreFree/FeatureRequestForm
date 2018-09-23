@@ -1,142 +1,12 @@
-/** Example GET and responses */
-// Sample JSON response
-var exampleJSON = {
-	"responseCode":200,
-	"responseMessage":'',
-	"responseClients":['Client A', 'Client B', 'Client C'],
-	"responseProductArea":['Policies', 'Billing', 'Claims','Reports'],
-	"responseFeatures":[
-		{
-			"id": 1,
-			"title": "Connect api beteween decoupled frontend/backend",
-			"description": "I have already created the api, need to install on frontend and backend.",
-			"client": "Client A",
-			"clientPriority": "1",
-			"targetDate": "09/20/2018",
-			"productArea": "Policies"
-		},
-		{
-			"id": 10,
-			"title": "Add server-side database validation",
-			"description": "Client-side form validations completed. Do the same for database api validations.",
-			"client": "Client A",
-			"clientPriority": "2",
-			"targetDate": "09/20/2018",
-			"productArea": "Policies"
-		},
-		{
-			"id": 50,
-			"title": "Add dynamic priority sorting on server-side",
-			"description": "Create sorting mechanism for client priorities",
-			"client": "Client A",
-			"clientPriority": " 3",
-			"targetDate": "09/20/2018",
-			"productArea": "Policies"
-		},
-		{
-			"id": 4,
-			"title": "Update reponse codes and corresponding logic on clientside",
-			"description": "create a list of appropriate response codes",
-			"client": "Client A",
-			"clientPriority": "4",
-			"targetDate": "09/20/2018",
-			"productArea": "Policies"
-		},
-		{
-			"id": 12,
-			"title": "Add client table and product area table. Api load on app.py start",
-			"description": "Add client table and product area table. Api load on app.py start",
-			"client": "Client A",
-			"clientPriority": "5",
-			"targetDate": "09/20/2018",
-			"productArea": "Policies"
-		},
-		{
-			"id": 11,
-			"title": "Place app in docker container!",
-			"description": "Dockerize!",
-			"client": "Client A",
-			"clientPriority": "10",
-			"targetDate": "09/20/2018",
-			"productArea": "Policies"
-		},
-		{
-			"id": 7,
-			"title": "Host app that is in docker container",
-			"description": "Host app that is in docker container",
-			"client": "Client A",
-			"clientPriority": "17",
-			"targetDate": "09/20/2018",
-			"productArea": "Policies"
-		},
-		{
-			"id": 8,
-			"title": "General cleanup and submission",
-			"description": "General cleanup and submission",
-			"client": "Client A",
-			"clientPriority": "30",
-			"targetDate": "09/20/2018",
-			"productArea": "Policies"
-		},
-		{
-			"id": 5,
-			"title": "Placeholder 2 Title",
-			"description": "Placeholder 1 description",
-			"client": "Client B",
-			"clientPriority": "1",
-			"targetDate": "01/01/2031",
-			"productArea": "Policies"
-		},
-		{
-			"id": 9,
-			"title": "Placeholder 2 Title",
-			"description": "Placeholder 2 description",
-			"client": "Client B",
-			"clientPriority": "2",
-			"targetDate": "01/01/2032",
-			"productArea": "Policies"
-		},
-		{
-			"id": 6,
-			"title": "Placeholder 1 Title",
-			"description": "Placeholder 1 description",
-			"client": "Client C",
-			"clientPriority": "5",
-			"targetDate": "06/06/2019",
-			"productArea": "Policies"
-		},
-		{
-			"id": 2,
-			"title": "Placeholder 2 Title",
-			"description": "Placeholder 2 description",
-			"client": "Client C",
-			"clientPriority": "8",
-			"targetDate": "06/07/2019",
-			"productArea": "Policies"
-		},
-		{
-			"id": 41,
-			"title": "Placeholder 3 description",
-			"description": "Placeholder 2 description",
-			"client": "Client C",
-			"clientPriority": "23",
-			"targetDate": "06/08/2019",
-			"productArea": "Policies"
-		}
-	]
-
-};
-
-// Sample GET for the API
-
-
-
-// This is a simple *viewmodel* - JavaScript that defines the data and behavior of your UI
+// Active view model.
 function AppViewModel() {
 
 	self = this;
-	self.idCounter=1000; // only used for pre-api use to add client users
+	self.initialized = false // For one-time setup variables
+	self.idCounter=0; // Used for client side in-memory database when not connected to database
 	self.pages = ['Information', 'View Features', 'Add Feature']; //Update is hidden until called
+
+	// KnockoutJS obserbables
 	self.clients = ko.observable();
 	self.productAreas = ko.observable();
 	self.featureList = ko.observable();
@@ -151,6 +21,9 @@ function AppViewModel() {
 	self.formClientPriority = ko.observable();
 	self.formTargetDate = ko.observable();
 	self.formProductArea = ko.observable();
+	self.responseJSON = ko.observable();
+	self.enableDBConnection = ko.observable();
+	self.dbStyleToggle = ko.observable();
 
 	/** Navigation */
 	// Change page focus
@@ -160,14 +33,14 @@ function AppViewModel() {
 		self.selectedPage(selection);
 	};
 
-	// Go to update page
+	// Go to update page. Page hidden while deselected
 	self.selectUpdatePage = function(data) { 
 		self.populateFormData(data);
 		self.selectedPage('Update Feature');
 	};
 	
 	// Switch client view
-    self.selectClient = function(client) { 
+    self.selectClient = function(client) {
 		self.chosenClientId(client);
 		self.chosenClientData(self.featureList()[self.chosenClientId()]);
 	};
@@ -181,7 +54,7 @@ function AppViewModel() {
 
 	// Delete feature (from update form)
 	self.deleteFeatureButton = function() {
-		self.sendToAPI({'DELETE':self.chosenFeatureData()});
+		if (self.enableDBConnection()){self.sendToAPI('DELETE',self.chosenFeatureData());}
 		self.removeFeature();
 		self.updateLocalDB();
 		self.selectPage('View Features');
@@ -190,7 +63,7 @@ function AppViewModel() {
   // Delete feature (from view features)
 	self.removeFeatureButton = function(data) {
 		self.populateFormData(data);
-		self.sendToAPI({'DELETE':self.chosenFeatureData()});
+		if (self.enableDBConnection()){self.sendToAPI('DELETE',self.chosenFeatureData());}
 		self.removeFeature();
 		self.clearForm();
 		self.updateLocalDB();
@@ -219,9 +92,9 @@ function AppViewModel() {
 		self.formProductArea("");
 	};
 
-	// Cancel form and return to "Information"
+	// Cancel form and return to 'View Features'
 	self.cancelFeatureButton = function() {
-		self.selectPage('Information');
+		self.selectPage('View Features');
 	};
 
 	// Fill form data 
@@ -236,8 +109,7 @@ function AppViewModel() {
 		self.formProductArea(data.productArea);
 	};
 
-	// Save form data (add feature calls directly here,
-	  	//update feature removes exisiting feature first )
+	// Save form data. Send to api and local db. If api db connected, update client db.
 	self.saveFormData = function() {
 		if (Number.isInteger(Number(self.formClientPriority())) && Number(self.formClientPriority())>0) {
 			self.formClientPriority(parseInt(self.formClientPriority()))
@@ -259,7 +131,7 @@ function AppViewModel() {
 			};
 			self.chosenFeatureData(tempVar);
 			self.featureList()[self.formClient()].push(self.chosenFeatureData());
-			self.sendToAPI({'CREATE':self.chosenFeatureData()});
+			if (self.enableDBConnection()){self.sendToAPI('CREATE',self.chosenFeatureData());}
 			self.updateLocalDB();
 			self.selectPage('View Features');
 
@@ -272,9 +144,30 @@ function AppViewModel() {
 
 	/** API logic */
 	// Send command and data to api
-	self.sendToAPI = function(data) {
-		// Send this data to api
+	self.sendToAPI = function(action, data) {
+		var toAPI = {
+			'action': action,
+			'data':data
+		}
+		self.getData(toAPI)
 	};
+
+	//Connect to database
+	self.connectToDBToggle = function() {
+		self.enableDBConnection(!self.enableDBConnection())
+		if (self.enableDBConnection()){
+			if (self.enableDBConnection()){self.sendToAPI('REQUEST',"")
+			if (self.selectedPage() == "Add Feature" || self.selectedPage() == "Update Feature"){
+				self.selectPage('View Features');
+				}
+			}
+
+		}
+	}
+
+	self.dbStyleToggle = ko.pureComputed(function() {
+        return self.enableDBConnection() > 0 ? "dbToggleOn" : "dbToggleOff";
+    },self);
 
 	// Takes responseFeatures type data and sorts it to be useable 
 	self.filterResponse = function(responseFeatures) {
@@ -295,6 +188,7 @@ function AppViewModel() {
 		return filtered;
 	};
 
+	// Updates local in-memory db when not connected to DB 
 	self.updateClientDB = function(localBDtoUpdate) {
 		var tempList = [];
 		for (key in localBDtoUpdate) {
@@ -303,14 +197,49 @@ function AppViewModel() {
 		return self.filterResponse(tempList);
 	};
 
-	/** Default bindings */
-	self.clients(exampleJSON["responseClients"]);
-	self.productAreas(exampleJSON["responseProductArea"]);
-	self.featureList(self.filterResponse(exampleJSON['responseFeatures']));
-	self.selectClient(exampleJSON['responseClients'][0]);
-	self.selectPage(self.pages[0]); 
-	self.sendToAPI({'REQUEST':''});
- 
+	// Top level API call. Recieves JSON data.
+	self.getData = function(toAPI) {
+		$.getJSON('/background_process',JSON.stringify(toAPI), function(data) {
+			
+			self.processResponse(data);
+			console.log("DATA");
+			console.log(data);
+		})
+		.error(function() {
+			if (self.enableDBConnection()){self.connectToDBToggle() }
+			 alert("Connection to database is not working. Try again later."); })
+
+	};
+
+	// Process response data update bindings
+	self.processResponse = function(data){
+		self.responseJSON(data.response)
+		console.log(self.responseJSON())
+
+		if (self.responseJSON()['responseCode'] == 200){
+			self.clients(self.responseJSON()["responseClients"]);
+			self.productAreas(self.responseJSON()["responseProductArea"]);
+			self.featureList(self.filterResponse(self.responseJSON()['responseFeatures']));
+			self.idCounter = Number(self.responseJSON()['highestIDNumber'])+1
+			self.chosenClientData(self.featureList()[self.chosenClientId()]);
+
+			// If fist time connecting to db, use these bindings
+			if (!self.initialized){
+				self.initialized=true
+				self.selectClient(self.responseJSON()['responseClients'][0]);
+				self.selectPage(self.pages[0]);
+			}
+		}
+		else{
+			console.log(self.responseJSON()['responseCode'])
+			console.log(self.responseJSON()['responseMessage'])
+		}
+	}
+
+	// Get initial data
+	self.enableDBConnection(false)
+	self.connectToDBToggle() //Connect to database
+	
 };
 
 // Activates knockout.js
