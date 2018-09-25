@@ -4,12 +4,11 @@ body { font-family: Helvetica, Arial}
 	margin: 10px 0 16px 0;
 	font-size: 0px;
 }
-/* .clients li:hover { background-color: #ddd; }     */
 .clients li:first-child { border-left: none; border-radius: 7px 0 0 7px; }
 .clients li { font-size: 16px; font-weight: bold; display: inline-block; padding: 0.5em 1.5em; cursor: pointer; color: #444; text-shadow: #f7f7f7 0 1px 1px; border-left: 1px solid #ddd; border-right: 1px solid #888; }
 .clients li { *display: inline !important; } /* IE7 only */
 .clients .selected { background-color: #444 !important; color: white; text-shadow:none; border-right-color: #aaa; border-left: none; box-shadow:inset 1px 2px 6px #070707; }    
-.cleintHover:hover{ background-color: #ddd; }  
+.clientHover:hover{ background-color: #ddd; }  
 
 
 .features { width: 100%; table-layout:fixed; border-spacing: 0; }
@@ -23,7 +22,7 @@ body { font-family: Helvetica, Arial}
 .features th:nth-child(4), .features td:nth-child(4) { width: 90; }
 .features th:last-child { border-right: none}
 .features tr:nth-child(even) {background-color: #EEE; }
-  
+
 .viewFeatures .featureInfo { background-color: #dae0e8; padding: 1em 1em 0.5em 1.25em; border-radius: 1em; }
 .viewFeatures .featureInfo h1 { margin-top: 0.2em; font-size: 130%; }
 .viewFeatures .featureInfo label { color: #777; font-weight: bold; min-width: 2.75em; text-align:right; display: inline-block; }

@@ -6,9 +6,9 @@
     ## "use 'Policies', 'Billing', 'Claims', 'Reports'"
 ## This can easily be done with one table. clientList and ProductList are dynamic and may be modified.
 
-from app import db
-
-#Product areas and client List. May by modified.
+from main import db
+#
+# #Product areas and client List. May by modified.
 clientList = ['Client A', 'Client B', 'Client C']
 productAreaList = ['Policies', 'Billing', 'Claims', 'Reports']
 
@@ -55,24 +55,29 @@ def createFeature(data):
 
 ## Update a single feature
 def updateFeature(data):
+    responseCode = 200
+    responseMessage= ''
     try:
         try:
-            updatePriorities(data)
+            responseCode, responseMessage = updatePriorities(data)
         except:
             return 100, "Could not reorder features try again."
 
-        feature = Feature.query.filter_by(id=data['id']).first()
-        feature.title = data['title']
-        feature.description = data['description']
-        feature.client = data['client']
-        feature.clientPriority = data['clientPriority']
-        feature.targetDate = data['targetDate']
-        feature.productArea = data['productArea']
-        db.session.commit()
-        return 200, ''
-    except:
-        return 100, "Could not update feature. Please try again."
-
+        if responseCode == 200:
+            feature = Feature.query.filter_by(id=data['id']).first()
+            feature.title = data['title']
+            feature.description = data['description']
+            feature.client = data['client']
+            feature.clientPriority = data['clientPriority']
+            feature.targetDate = data['targetDate']
+            feature.productArea = data['productArea']
+            db.session.commit()
+            return 200, ''
+        else:
+            return responseCode, responseMessage
+    except Exception as e:
+        # print('Somthing went wrong')
+        return 999,"Could not update feature. Error code: " + str(e)
 
 ## Delete a feature
 def deleteFeature(data):
@@ -117,19 +122,25 @@ def queryGetFeature(id):
 ## Update priorities based on incoming action and priority.
 ## Does not change priorities if deleting. This is intentional.
 def updatePriorities(data):
-    featureList = queryAllDict()
-    features = [d for d in featureList if d['client'] == data['client'] if
-                int(d['clientPriority']) >= int(data['clientPriority']) and not data['id'] == d['id']]
-    features = sorted(features, key=lambda i: int(i['clientPriority']))
-    for x in range(len(features)):
-        if not int(features[0]['clientPriority']) == int(data['clientPriority']):
-            break
-        singleFeature = queryGetFeature(features[x]['id'])
-        singleFeature.clientPriority += 1
-        if x == len(features) - 1 or not int(features[x]['clientPriority']) + 1 == int(
-                features[x + 1]['clientPriority']):
-            break
-    db.session.commit()
+    try:
+        featureList = queryAllDict()
+        features = [d for d in featureList if d['client'] == data['client'] if int(d['clientPriority']) >= int(data['clientPriority']) and not data['id'] == d['id']]
+        features = sorted(features, key=lambda i: int(i['clientPriority']))
+        for x in range(len(features)):
+            if not int(features[0]['clientPriority']) == int(data['clientPriority']):
+                break
+            singleFeature = Feature.query.get((features[x]['id']))
+            singleFeature.clientPriority += 1
+            if x == len(features) - 1 or not int(features[x]['clientPriority']) + 1 == int(
+                    features[x + 1]['clientPriority']):
+                break
+        db.session.commit()
+        return 200, ''
+
+    except Exception as e:
+        print('Somthing went wrong in updatePriorities')
+        return 999, str(e)
+
 
 ## Validates incoming form data. Responds with appropriate error codes if a field validation fails.
 def validateFeature(data):

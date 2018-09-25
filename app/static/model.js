@@ -200,22 +200,18 @@ function AppViewModel() {
 	// Top level API call. Recieves JSON data.
 	self.getData = function(toAPI) {
 		$.getJSON('/background_process',JSON.stringify(toAPI), function(data) {
-			
 			self.processResponse(data);
-			console.log("DATA");
-			console.log(data);
 		})
 		.error(function() {
 			if (self.enableDBConnection()){self.connectToDBToggle() }
-			 alert("Connection to database is not working. Try again later."); })
+			 alert("Connection to database is not working. Try again later."); 
+			})
 
 	};
 
 	// Process response data update bindings
 	self.processResponse = function(data){
 		self.responseJSON(data.response)
-		console.log(self.responseJSON())
-
 		if (self.responseJSON()['responseCode'] == 200){
 			self.clients(self.responseJSON()["responseClients"]);
 			self.productAreas(self.responseJSON()["responseProductArea"]);
@@ -231,8 +227,8 @@ function AppViewModel() {
 			}
 		}
 		else{
-			console.log(self.responseJSON()['responseCode'])
-			console.log(self.responseJSON()['responseMessage'])
+			console.log("Reponse code: ", self.responseJSON()['responseCode'])
+			console.log("Reponse message: ", self.responseJSON()['responseMessage'])
 		}
 	}
 

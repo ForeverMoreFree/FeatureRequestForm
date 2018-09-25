@@ -1,18 +1,29 @@
 ## Introduction
-Per the directions of this activity, I have decided to make use of my creativity in completing this project. I have slightly enlarged the scope into a webapp that I will personally use. This means it will have full CRUD, GUI responsiveness, and adaptable to future features. This has enabled me to use the current app as the projects own feature request form! :)
+The activity suggests using creativity to complete this project. I have decided to do just that. I have slightly enlarged the scope of the project to include CRUD functionality and a server connect/disconnect button. It is also highly adaptable for new features. This has enabled me to use the current app as the project's own feature request form! :)
 
-The api has now decoupled the frontend and backend. The database has its own api which the server calls to preform database actions. Beyond the api, I have included a button to connect and disconnect with the server database. One can disconnect and have near full functionality testing the site without modifying the database.
+The program may be built into a Docker image if desired. An image is also on Dockerhub located at https://hub.docker.com/r/forevermorefree/featurerequest/
 
-Next steps are to containerize using Docker, host on a service, and update the final documentation.
+Here is what is used in the app: (Included with Docker image)
+* KnockoutJS front end
+* Flask backend
+* HTTP RESTful API using JSON messages
+* Mysqlite3 database
+* SQLAlchemy
+* nginx to serve static content
+* Gunicorn WSGI to bridge nginx and Flask
+* Supervisor to oversee Gunicorn on local unix
 
-## The current application
-We have restructured the backend. We are no longer using Flask blueprints. The Single Page Application (SPA) is fully connected to the server, which routes actions to the database api. Validation checks are preformed on the client side. If successful, the action is the validated on the server side before touching the database api. This reduces server calls if data is incomplete, and rejects malformed data that is intentionally sent to corrupt the database. Error messages for each type of error from the server are logged in the console.
-Also, all routes direct to the index page.
 
-Currently missing functionality for a full feature set:
-* None! Project requirements satisfied.
+## Instructions to run app
+```shell
+Start Docker engine
+$ docker run -d -p 5000:80 forevermorefree/featurerequest:1
+Browse to http://192.168.99.100:5000
+```
 
-## Demonstration
+
+
+## App demonstration
 Instructions to use are on the information page of the app.
 Here are images of the working app.
 

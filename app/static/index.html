@@ -1,0 +1,114 @@
+<html>
+  <head>
+  <link  type="text/css" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
+  <script type='text/javascript' src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script type='text/javascript' src="model.js"></script>
+  <link type="text/css" rel="stylesheet" href="styles.css" />
+  <title>Feature Request Form</title>
+</head>
+<body>
+	<ul class="clients">
+    <!-- ko foreach: pages -->
+      <li class="clientHover" data-bind="text: $data,
+                    css: { selected: $data == $root.selectedPage() },
+                    click: $root.selectPage">
+      </li>
+    <!-- /ko -->
+    <li data-bind="visible: 'Update Feature' == selectedPage(),
+                  css: { selected: 'Update Feature' == selectedPage()}">Update Feature
+    </li>
+	<li class="dbNavButton" data-bind="click: connectToDBToggle,
+		css: dbStyleToggle"><span data-bind="text:
+		enableDBConnection() ? 'DB Connected' : 'DB Disconnected';"></span></li>
+	</ul>
+
+	<div class="container">
+
+		<!-- Template for "Information" page -->
+		<div data-bind="visible: selectedPage() == pages[0] ">
+			<div class="jumbotron">
+				<h2>Welcome to our feature request form!</h2>
+				<h4 style="margin-left:100px">The instructions to use this site are below</h2>
+			</div>
+			<h3><span style="font-weight: 700">Quick start: </span></h3>
+			<ul>
+				<li><h4>Click <span style="font-weight: 700">"Add Feature" </span> on navigation bar<br>
+					Fill out the needed information<br>
+					If chosen priority for the selected client is taken, others priorities will be shifted<br>
+					Press the "Submit" button</h4></li>
+			</ul>
+			<h3><span style="font-weight: 700">Instructions: </span></h3>
+			<ul>
+				<li><h4>To view active feature requests, click <span style="font-weight: 700">"View Features" </span>on the navigation bar <br></li>
+				<li><h4>To edit a feature, click a feature while on the <span style="font-weight: 700">"View Features"</span> page <br></li>
+				<li><h4>To remove a feature do one of the following:<br>
+				<ul><li>Press "Complete" while on <span style="font-weight: 700">"View Features"</span><br></li></ul>
+				<ul><li>Press "Delete" while on <span style="font-weight: 700">"Update Feature"</span></h4></li></ul>
+					</li>
+			</ul>
+			<h3><span style="font-weight: 700">Admin/Testing: </span></h3>
+			<ul>
+				<li><h4>Connect/disconnect with the database using the <span style="font-weight: 700">"DB Button"</span> (Starts connected)<br>
+					While disconnected the site will function as it were connected to the server<br>
+					<ul><li>(except priority management)</li></ul>
+					On DB reconnection, the local database will be overwritten with the server database<br>
+				</h4></li>
+			</ul>
+		</div>
+		<br>
+
+		<!-- Template for View Features page -->
+		<div data-bind="visible: selectedPage() == pages[1] ">
+			<ul class="clients" data-bind="foreach: clients">
+				<li data-bind="text: $data,
+								css: { selected: $data == $root.chosenClientId() },
+								click: $root.selectClient">
+				</li>
+			</ul>
+			<table class="features">
+				<thead><tr><th>Priority</th><th>Target Date</th><th>Title</th><th></th></tr></thead>
+				<tbody data-bind="foreach: chosenClientData">
+					<tr>
+						<td data-bind="text: clientPriority,click: $root.selectUpdatePage",></td>
+						<td data-bind="text: targetDate,click: $root.selectUpdatePage"></td>
+						<td data-bind="text: title,click: $root.selectUpdatePage"></td>
+						<td data-bind="click: $root.removeFeatureButton"><button style="color: black;">Complete</button></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Template for Add Features/Update Features pages -->
+		<div data-bind="visible: selectedPage() == pages[2] || selectedPage() == 'Update Feature' ">
+			<form id="submit-form" data-bind="submit: saveFormData">
+				<div><label >Title</label><input type="text" class="form-control is-valid" required data-bind="textInput: formTitle, value: formTitle" ></input></div><br>
+				<div><label >Description</label><textarea class="form-control  is-valid" rows="3" required data-bind="textInput: formDesciption, value: formDesciption"></textarea></div><br>
+				<div><label>Client</label><select class="form-control is-valid" required data-bind="options: clients,
+										value: formClient,
+										valueAllowUnset: true,
+										optionsCaption: 'Choose Client...'"></select></div><br>
+				<div><label>Client Priority</label><input class="form-control is-valid" required data-bind="textInput: formClientPriority, value: formClientPriority" placeholder="Use a number"></input></div><br>
+				<div><label>Target Date</label><input class="form-control is-valid" required data-bind="textInput: formTargetDate, value: formTargetDate", placeholder="Format mm/dd/yyyy"></input></div><br>
+				<div><label>Product Area</label><select class="form-control is-valid" required data-bind="options: productAreas,
+					value: formProductArea,
+					valueAllowUnset: true,
+					optionsCaption: 'Choose Product Area...'"></select></div><br>
+				<div>
+					<button type='submit'data-bind="visible: 'Update Feature' == selectedPage() ,
+									">Update</button>
+					<button type='submit' data-bind="visible: 'Update Feature' != selectedPage() ,
+									">Submit</button>
+					<button data-bind="visible: 'Update Feature' != selectedPage() ,
+									click: clearForm">Reset</button>
+					<button data-bind="click: cancelFeatureButton">Cancel</button>
+					<button data-bind="visible: 'Update Feature' == selectedPage() ,
+									click: deleteFeatureButton">Delete</button>
+				</div>
+				</div>
+			</form>
+		</div>
+	</div>
+		
+</body>
+</html>
